@@ -1,0 +1,33 @@
+name: Build X360Tube ELF32
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build with official LibXenon Docker image
+        run: |
+          docker run --rm \
+            -v "$PWD:/app" \
+            free60/libxenon:latest \
+            bash -lc 'cd /app && make'
+
+      - name: Verify ELF32
+        run: |
+          file x360tube_test.elf32
+          test -s x360tube_test.elf32
+
+      - name: Prepare XeLL filename
+        run: cp x360tube_test.elf32 xenon.elf
+
+      - name: Upload Xbox 360 test file
+        uses: actions/upload-artifact@v4
+        with:
+          name: X360Tube-Test-0.1
+          path: xenon.elf
